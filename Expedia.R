@@ -1,44 +1,63 @@
 ###################################################################################
-## Initial viewing of Expedia Hotel Recommender data from Kaggle
+## Initial viewing of Expedia Hotel Recommender data from Kaggle, April 2016
 ###################################################################################
+
+##  LIBRARIES  ##
+library(data.table)  # for fread to read large files, may need to install first
+library(ggplot2)     # data visualization
+library(randomForest)
 
 ## DATA EXPLORATION AND CLEANING
 ## load the Expedia data in R
 ## Be sure your working directory is set to the cloned Expedia_Kaggle base directory
-expedia.data <- read.csv("data_Known.csv", header=TRUE)
-expedia.predict <- read.csv("data_Predict.csv", header=TRUE)
+expedia.data <- fread("data_Known.csv", header=TRUE)        # ~3min to load
+expedia.predict <- fread("data_Predict.csv", header=TRUE)   # ~10s  to load
+
 ## explore the data set
 dim(expedia.data)
+dim(expedia.predict)
 str(expedia.data)
-summary(expedia.data)
+#summary(expedia.data)
 
 ## Clean both sets simultaneously
-# Add variable hotel_cluster to the "test" dataset with 0 Values (gets overwritten later)
+# Add variables hotel_cluster & others to the "test" dataset (gets removed later)
+expedia.predict$is_booking <- 2
+expedia.predict$cnt <- 0
 expedia.predict$hotel_cluster <- 0
+expedia.data$id <- -1
+
+# Select out only booking events from train data
+expedia.booked <- expedia.data[expedia.data$is_booking == 1]
+dim(expedia.booked)
 
 # Combine Kaggle's "train" and "test" datasets, name all_data.  
 #  (We'll split into two groups after filling in missing values and tidying up)
-all_data <- rbind(expedia.data,expedia.predict)
+all_data <- rbind(expedia.predict,expedia.booked)
+
+
+##  VISUALIZATION  ##
+ggplot(data = all_data, aes(all_data$is_mobile)) + geom_histogram()
 
 # Which columns have missing data?
 # What do we wanna do?  Do we wanna make new column, like "Child" in titanic, to help trees?
 
 
 # Split the data back into Kaggle's train and test sets
-expedia.data <- all_data[1:37670293,]
-expedia.predict <- all_data[37670294:37923137,]
+expedia.predict <- all_data[1:2528243,]
+#expedia.data <- all_data[2528244:40198536,]  #if you didn't ignore non-bookings
+expedia.booked <- all_data[2528244:5528936,]
 
 
 
 ## BUILD MODEL
 ## randomly choose 70% of the data set as training data
 set.seed(27)
-expedia.train.indices <- sample(1:nrow(expedia.data), 0.7*nrow(expedia.data), replace=F)
-expedia.train <- expedia.data[expedia.train.indices,]
+expedia.train.indices <- sample(1:nrow(expedia.booked), 0.7*nrow(expedia.booked), replace=F)
+expedia.train <- expedia.booked[expedia.train.indices,]
 dim(expedia.train)
 summary(expedia.train$hotel_cluster)
 ## select the other 30% as the testing data
-expedia.test <- expedia.data[-expedia.train.indices,]
+expedia.test <- expedia.booked[-expedia.train.indices,]
 dim(expedia.test)
 summary(expedia.test$hotel_cluster)
 ## You could also do this
@@ -46,7 +65,7 @@ summary(expedia.test$hotel_cluster)
 #expedia.test <- expedia.data[random.rows.test,]
 
 ## Fit decision model to training set
-expedia.rf.model <- randomForest(hotel_cluster ~ ., data=expedia.train, importance=TRUE, ntree=1000, mtry=3, nodesize=5, maxnodes=200)
+expedia.rf.model <- randomForest(hotel_cluster ~ User_Location_Region + Channel + Srch_Adults_Cnt + Hotel_Country, data=expedia.train, importance=TRUE, ntree=1000, mtry=3, nodesize=5, maxnodes=200)
 print(expedia.rf.model)
 
 
