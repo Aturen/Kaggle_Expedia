@@ -6,7 +6,7 @@
 library(data.table)  # for fread to read large files, may need to install first
 library(ggplot2)     # data visualization
 library(randomForest)
-
+##TEST
 ## DATA EXPLORATION AND CLEANING
 ## load the Expedia data in R
 ## Be sure your working directory is set to the cloned Expedia_Kaggle base directory
