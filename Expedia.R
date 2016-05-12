@@ -36,7 +36,23 @@ all_data <- rbind(expedia.predict,expedia.booked)
 
 
 ##  VISUALIZATION  ##
+# On cell phone?
 ggplot(data = all_data, aes(all_data$is_mobile)) + geom_histogram()
+ggplot(data = expedia.booked, aes(expedia.booked$is_mobile)) + geom_histogram()
+# A: Most people are on the web, some are on their phones.  How does this change if they booked?
+
+# Which hotel cluster did people book?
+ggplot(data = expedia.booked, aes(expedia.booked$hotel_cluster)) + geom_histogram()
+
+# Where did people book
+ggplot(data = expedia.booked, aes(expedia.booked$hotel_continent)) + geom_histogram()
+ggplot(data = expedia.booked, aes(expedia.booked$hotel_country)) + geom_histogram()
+
+# Is there correlation between user_location_country and hotel_country?  A: NOOOOO
+ggplot(data = expedia.booked, aes(x = hotel_country, y = user_location_country)) + geom_point()
+
+
+
 
 # Which columns have missing data?
 # What do we wanna do?  Do we wanna make new column, like "Child" in titanic, to help trees?
