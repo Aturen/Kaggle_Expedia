@@ -51,9 +51,20 @@ ggplot(data = expedia.booked, aes(expedia.booked$hotel_country)) + geom_histogra
 # Is there correlation between user_location_country and hotel_country?  A: NOOOOO
 ggplot(data = expedia.booked, aes(x = hotel_country, y = user_location_country)) + geom_point()
 
+# What days of the week are people booking?
+expedia.booked$DayOfWeek <- factor(weekdays(as.Date(expedia.booked$date_time)), levels= c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"))
+ggplot(data = expedia.booked, aes(expedia.booked$DayOfWeek)) + geom_bar()
+
+# Gets time: as.POSIXct(head(expedia.booked$date_time))
+
+
+# Which are the most popular hotel clusters?
+sorted_cluster_frequency <- sort(table(expedia.booked$hotel_cluster), decreasing = TRUE)
+most_common_clusters <- head(as.matrix(sorted_cluster_frequency)[,0],5)
 
 
 
+################################################
 # Which columns have missing data?
 # What do we wanna do?  Do we wanna make new column, like "Child" in titanic, to help trees?
 
